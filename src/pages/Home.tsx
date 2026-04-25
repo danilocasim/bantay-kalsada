@@ -76,10 +76,10 @@ export default function Home() {
         <div>
           <h3 className="text-sm font-semibold text-muted-foreground px-1 mb-3 uppercase tracking-wide">Quick report</h3>
           <div className="grid grid-cols-2 gap-3">
-            <Quick to="/report?cat=pothole" icon={Construction} color="status-pothole" label="Pothole" />
-            <Quick to="/report?cat=flood" icon={Droplets} color="status-flood" label="Flood" />
-            <Quick to="/report?cat=drainage" icon={TriangleAlert} color="status-drainage" label="Drainage" />
-            <Quick to="/report?cat=other" icon={AlertTriangle} color="status-urgent" label="Road Hazard" />
+            <Quick to="/report?cat=pothole" icon={Construction} tone="status-pothole" label="Pothole" />
+            <Quick to="/report?cat=flood" icon={Droplets} tone="status-flood" label="Flood" />
+            <Quick to="/report?cat=drainage" icon={TriangleAlert} tone="status-drainage" label="Drainage" />
+            <Quick to="/report?cat=other" icon={AlertTriangle} tone="status-urgent" label="Road Hazard" />
           </div>
         </div>
       </div>
@@ -96,10 +96,26 @@ function Stat({ label, value }: { label: string; value: number }) {
   );
 }
 
-function Quick({ to, icon: Icon, color, label }: { to: string; icon: typeof Bell; color: string; label: string }) {
+function Quick({
+  to,
+  icon: Icon,
+  tone,
+  label,
+}: {
+  to: string;
+  icon: typeof Bell;
+  tone: string;
+  label: string;
+}) {
   return (
-    <Link to={to} className="bg-surface rounded-2xl border border-border/70 shadow-soft p-4 flex flex-col gap-3 hover:shadow-float transition active:scale-[0.98]">
-      <span className={`h-10 w-10 rounded-xl bg-${color}/10 text-${color} grid place-items-center`}>
+    <Link
+      to={to}
+      className="bg-surface rounded-2xl border border-border/70 shadow-soft p-4 flex flex-col gap-3 hover:shadow-float transition active:scale-[0.98]"
+    >
+      <span
+        className="h-10 w-10 rounded-xl grid place-items-center"
+        style={{ backgroundColor: `hsl(var(--${tone}) / 0.12)`, color: `hsl(var(--${tone}))` }}
+      >
         <Icon className="h-5 w-5" />
       </span>
       <span className="text-sm font-semibold">{label}</span>
