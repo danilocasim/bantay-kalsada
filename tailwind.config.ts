@@ -19,9 +19,22 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          muted: "hsl(var(--surface-muted))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          soft: "hsl(var(--primary-soft))",
+        },
+        status: {
+          urgent: "hsl(var(--status-urgent))",
+          pothole: "hsl(var(--status-pothole))",
+          flood: "hsl(var(--status-flood))",
+          drainage: "hsl(var(--status-drainage))",
+          resolved: "hsl(var(--status-resolved))",
+          pending: "hsl(var(--status-pending))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
