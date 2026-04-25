@@ -1,40 +1,23 @@
-import { PageHeader, SoftCard, SeverityBadge } from "@/components/ui-kit";
-import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import { collection, getDocs, limit, orderBy, query, where } from "firebase/firestore";
-import { getDb } from "@/lib/firebase";
-import { CATEGORY_LABEL, type Report } from "@/lib/types";
-import { Link } from "react-router-dom";
+import { PageHeader, SoftCard } from "@/components/ui-kit";
+
+const LEVELS = [
+  { name: "Low", desc: "Cosmetic or low-risk issues. Faded paint, minor cracks.", color: "bg-status-resolved" },
+  { name: "Moderate", desc: "Affects flow or safety but not immediately dangerous.", color: "bg-status-pothole" },
+  { name: "High", desc: "Immediate danger to vehicles or pedestrians. Open manholes, deep potholes.", color: "bg-status-urgent" },
+];
 
 export default function Urgency() {
-  const [reports, setReports] = useState<Report[]>([]);
-  useEffect(() => {
-    (async () => {
-      try {
-        const snap = await getDocs(query(collection(getDb(), "reports"), where("severity", "==", "high"), orderBy("createdAt", "desc"), limit(50)));
-        setReports(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Report, "id">) })));
-      } catch {/* */}
-    })();
-  }, []);
-
   return (
     <div>
-      <PageHeader title="Urgent Near You" subtitle="Help confirm issues that need faster attention." back />
+      <PageHeader title="Urgency levels" subtitle="How we prioritize reports" back />
       <div className="px-5 space-y-3">
-        {reports.map((r) => (
-          <SoftCard key={r.id}>
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h3 className="text-sm font-semibold truncate">{r.title}</h3>
-                <p className="text-xs text-muted-foreground truncate mt-0.5">{CATEGORY_LABEL[r.category]} · {r.barangay ?? "Nearby"}</p>
-              </div>
-              <SeverityBadge severity={r.severity} />
-            </div>
-            <div className="mt-3 flex items-center justify-between gap-2">
-              <span className="text-xs text-muted-foreground">{r.confirmCount} confirmations</span>
-              <div className="flex gap-2">
-                <Button size="sm" className="rounded-full">Confirm Issue</Button>
-                <Link to={`/r/${r.id}`}><Button size="sm" variant="outline" className="rounded-full">View</Button></Link>
+        {LEVELS.map((l) => (
+          <SoftCard key={l.name}>
+            <div className="flex items-start gap-3">
+              <div className={`h-10 w-10 rounded-xl ${l.color} shrink-0`} />
+              <div>
+                <div className="font-semibold text-[15px]">{l.name}</div>
+                <p className="text-sm text-muted-foreground mt-1">{l.desc}</p>
               </div>
             </div>
           </SoftCard>

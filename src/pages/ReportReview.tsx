@@ -1,80 +1,41 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
-import { getDb } from "@/lib/firebase";
+import { Check } from "lucide-react";
+import { motion } from "framer-motion";
+import { SoftCard, SeverityBadge } from "@/components/ui-kit";
+import { getReport } from "@/lib/dataSource";
 import { CATEGORY_LABEL, type Report } from "@/lib/types";
-import { PageHeader, SoftCard, SeverityBadge } from "@/components/ui-kit";
-import { Button } from "@/components/ui/button";
 
 export default function ReportReview() {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [report, setReport] = useState<Report | null>(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!id) return;
-    (async () => {
-      const snap = await getDoc(doc(getDb(), "reports", id));
-      if (snap.exists()) setReport({ id: snap.id, ...(snap.data() as Omit<Report, "id">) });
-    })();
-  }, [id]);
-
-  if (!report) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
+  useEffect(() => { if (id) getReport(id).then(setReport); }, [id]);
 
   return (
-    <div className="pb-32">
-      <PageHeader title="Review Your Report" back />
-      <div className="px-5 space-y-4">
-        <SoftCard>
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold">Issue Summary</h3>
-            <SeverityBadge severity={report.severity} />
-          </div>
-          <p className="text-sm text-foreground mt-2">{CATEGORY_LABEL[report.category]}</p>
-          {report.description && <p className="text-sm text-muted-foreground mt-1">{report.description}</p>}
-        </SoftCard>
-
-        <SoftCard>
-          <h3 className="text-sm font-semibold">Location</h3>
-          <div className="mt-2 rounded-xl bg-surface-muted h-32 grid place-items-center text-xs text-muted-foreground">
-            {report.geo.lat.toFixed(5)}, {report.geo.lng.toFixed(5)}
-          </div>
-        </SoftCard>
-
-        {report.photoURLs.length > 0 && (
-          <SoftCard>
-            <h3 className="text-sm font-semibold">Evidence</h3>
-            <div className="mt-3 flex gap-2 overflow-x-auto">
-              {report.photoURLs.map((u) => (
-                <img key={u} src={u} alt="evidence" className="h-24 w-24 rounded-xl object-cover" />
-              ))}
-            </div>
-          </SoftCard>
-        )}
-
-        <SoftCard>
-          <h3 className="text-sm font-semibold">Responsible Office</h3>
-          <p className="text-sm mt-1">{report.agencyName ?? "City Engineering Office"}</p>
-          <p className="text-xs text-muted-foreground mt-1">Final responsibility may be verified by the receiving office.</p>
-        </SoftCard>
-
-        <SoftCard>
-          <h3 className="text-sm font-semibold">Generated Official Report</h3>
-          <p className="text-sm text-muted-foreground mt-2 whitespace-pre-line">
-            {report.aiOfficialReport ??
-              `Subject: ${CATEGORY_LABEL[report.category]} report\n\nA ${CATEGORY_LABEL[report.category].toLowerCase()} has been reported at ${report.geo.lat.toFixed(5)}, ${report.geo.lng.toFixed(5)}. Recommended action: site inspection and repair scheduling.`}
-          </p>
-        </SoftCard>
+    <div className="min-h-screen px-5 pt-safe pb-safe flex flex-col">
+      <div className="pt-8 text-center">
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 220, damping: 16 }}
+          className="mx-auto h-16 w-16 rounded-full bg-status-resolved text-white grid place-items-center shadow-float">
+          <Check className="h-8 w-8" strokeWidth={3} />
+        </motion.div>
+        <h1 className="mt-5 text-2xl font-semibold tracking-tight">Report submitted</h1>
+        <p className="text-sm text-muted-foreground mt-1.5">Thanks for keeping the roads safer.</p>
       </div>
-      <div className="fixed bottom-0 inset-x-0 px-5 pb-safe pt-3 bg-gradient-to-t from-background via-background to-transparent">
-        <div className="max-w-md mx-auto flex flex-col gap-2">
-          <Button onClick={() => navigate(`/r/${report.id}`)} className="w-full h-12 rounded-full font-semibold">
-            Submit Report
-          </Button>
-          <Button variant="ghost" onClick={() => navigate(-1)} className="w-full h-12 rounded-full">
-            Edit Details
-          </Button>
-        </div>
+      {report && (
+        <SoftCard className="mt-7">
+          <div className="text-xs font-semibold uppercase tracking-wide text-primary">AI Summary</div>
+          <p className="text-sm text-foreground/90 mt-1.5 leading-relaxed">{report.aiSummary}</p>
+          <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
+            <div><div className="text-muted-foreground">Category</div><div className="font-medium mt-0.5">{CATEGORY_LABEL[report.aiCategory ?? report.category]}</div></div>
+            <div><div className="text-muted-foreground">Severity</div><div className="mt-1"><SeverityBadge severity={report.aiSeverity ?? report.severity} /></div></div>
+            <div className="col-span-2"><div className="text-muted-foreground">Routed to</div><div className="font-medium mt-0.5">{report.agencyName ?? "Pending assignment"}</div></div>
+          </div>
+        </SoftCard>
+      )}
+      <div className="mt-auto space-y-2.5 pt-6">
+        <button onClick={() => navigate(`/r/${id}`)} className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-semibold text-[15px] shadow-soft">View report</button>
+        <button onClick={() => navigate("/home")} className="w-full py-4 rounded-2xl bg-transparent text-foreground font-medium text-[15px] hover:bg-muted">Back to home</button>
       </div>
     </div>
   );

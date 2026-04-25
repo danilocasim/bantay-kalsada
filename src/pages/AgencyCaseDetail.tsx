@@ -1,92 +1,63 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
-import { getDb } from "@/lib/firebase";
+import { toast } from "sonner";
+import { PageHeader, SoftCard, SeverityBadge, StatusBadge, EmptyState } from "@/components/ui-kit";
+import { getReport, isDemoMode } from "@/lib/dataSource";
 import { CATEGORY_LABEL, STATUS_LABEL, type Report, type ReportStatus } from "@/lib/types";
-import { PageHeader, SoftCard, SeverityBadge, StatusBadge } from "@/components/ui-kit";
-import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
 
-const ACTIONS: { status: ReportStatus; label: string }[] = [
-  { status: "acknowledged", label: "Acknowledge" },
-  { status: "scheduled", label: "Schedule Repair" },
-  { status: "in_progress", label: "Mark In Progress" },
-  { status: "resolved", label: "Mark Resolved" },
-];
+const NEXT_STATUSES: ReportStatus[] = ["acknowledged", "scheduled", "in_progress", "resolved"];
 
 export default function AgencyCaseDetail() {
   const { id } = useParams();
   const [report, setReport] = useState<Report | null>(null);
   const [note, setNote] = useState("");
+  useEffect(() => { if (id) getReport(id).then(setReport); }, [id]);
 
-  useEffect(() => {
-    if (!id) return;
-    (async () => {
-      const snap = await getDoc(doc(getDb(), "reports", id));
-      if (snap.exists()) setReport({ id: snap.id, ...(snap.data() as Omit<Report, "id">) });
-    })();
-  }, [id]);
+  if (!report) return <EmptyState title="Case not found" />;
 
-  async function setStatus(status: ReportStatus) {
-    if (!id) return;
-    try {
-      await updateDoc(doc(getDb(), "reports", id), { status, updatedAt: serverTimestamp() });
-      setReport((r) => (r ? { ...r, status } : r));
-      toast({ title: `Status: ${STATUS_LABEL[status]}` });
-    } catch (err) {
-      toast({ title: "Update failed", description: (err as Error).message, variant: "destructive" });
-    }
-  }
-
-  if (!report) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
+  const updateStatus = (s: ReportStatus) => {
+    if (isDemoMode) toast(`Demo: status would be set to ${STATUS_LABEL[s]}`);
+    setReport({ ...report, status: s });
+  };
 
   return (
     <div>
-      <PageHeader title="Road Hazard Case" subtitle={`#${report.id.slice(0, 8).toUpperCase()}`} back right={<StatusBadge status={report.status} />} />
-      <div className="px-5 space-y-4 pb-12">
+      <PageHeader title={report.title} subtitle={`${CATEGORY_LABEL[report.category]} · ${report.address}`} back />
+      <div className="px-5 space-y-4">
+        <div className="flex gap-2">
+          <SeverityBadge severity={report.severity} />
+          <StatusBadge status={report.status} />
+        </div>
         <SoftCard>
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold">{report.title}</h3>
-            <SeverityBadge severity={report.severity} />
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">{CATEGORY_LABEL[report.category]} · {report.confirmCount} confirmations</p>
-          {report.description && <p className="text-sm mt-3">{report.description}</p>}
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Reporter's note</div>
+          <p className="text-sm mt-1.5 leading-relaxed">{report.description}</p>
         </SoftCard>
-
-        {report.photoURLs.length > 0 && (
-          <SoftCard className="p-3">
-            <div className="grid grid-cols-2 gap-2">
-              {report.photoURLs.map((u) => (
-                <img key={u} src={u} alt="" className="rounded-xl h-32 w-full object-cover" />
-              ))}
-            </div>
+        {report.aiSummary && (
+          <SoftCard className="bg-primary-soft">
+            <div className="text-xs font-semibold uppercase tracking-wide text-primary">AI Summary</div>
+            <p className="text-sm mt-1.5 leading-relaxed">{report.aiSummary}</p>
           </SoftCard>
         )}
-
-        <SoftCard>
-          <h3 className="text-sm font-semibold">AI Summary</h3>
-          <p className="text-sm text-muted-foreground mt-2 whitespace-pre-line">
-            {report.aiSummary ?? "AI analysis is pending. The system will summarize evidence and recommend actions automatically."}
-          </p>
-        </SoftCard>
-
-        <SoftCard>
-          <h3 className="text-sm font-semibold">Update Status</h3>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            {ACTIONS.map((a) => (
-              <Button key={a.status} variant="outline" className="rounded-full" onClick={() => setStatus(a.status)}>
-                {a.label}
-              </Button>
+        <div>
+          <h3 className="text-base font-semibold tracking-tight mb-2">Update status</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {NEXT_STATUSES.map((s) => (
+              <button key={s} onClick={() => updateStatus(s)}
+                className={`p-3 rounded-xl text-sm font-medium border transition ${report.status === s ? "bg-primary text-primary-foreground border-primary" : "bg-surface border-border hover:bg-muted"}`}>
+                {STATUS_LABEL[s]}
+              </button>
             ))}
           </div>
-          <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            rows={3}
-            placeholder="Internal note (not visible publicly)"
-            className="mt-3 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </SoftCard>
+        </div>
+        <div>
+          <h3 className="text-base font-semibold tracking-tight mb-2">Internal note</h3>
+          <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} placeholder="Add a note for your team…"
+            className="w-full p-3 rounded-xl bg-surface-muted border border-transparent focus:border-primary focus:bg-surface outline-none text-sm resize-none" />
+          <button onClick={() => { toast.success("Note saved"); setNote(""); }} disabled={!note.trim()}
+            className="mt-2 w-full py-3 rounded-xl bg-foreground text-background font-medium text-sm disabled:opacity-50">
+            Save note
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,80 +1,39 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Check, Loader2 } from "lucide-react";
-import { PageHeader, SoftCard } from "@/components/ui-kit";
-import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { Sparkles, Check } from "lucide-react";
 
-const STEPS = [
-  "Detecting issue type",
-  "Checking GPS location",
-  "Finding duplicate reports nearby",
-  "Estimating urgency",
-  "Identifying responsible agency",
-  "Generating official report",
-];
+const STEPS = ["Analyzing photo…", "Classifying severity…", "Routing to nearest agency…", "Generating official report…"];
 
 export default function AIAnalysis() {
-  const { id } = useParams();
   const navigate = useNavigate();
+  const { id } = useParams();
   const [step, setStep] = useState(0);
 
   useEffect(() => {
-    if (step >= STEPS.length) return;
-    const t = setTimeout(() => setStep(step + 1), 600);
+    if (step >= STEPS.length) { const t = setTimeout(() => navigate(`/review/${id}`), 600); return () => clearTimeout(t); }
+    const t = setTimeout(() => setStep(step + 1), 900);
     return () => clearTimeout(t);
-  }, [step]);
-
-  const done = step >= STEPS.length;
+  }, [step, id, navigate]);
 
   return (
-    <div className="pb-10">
-      <PageHeader title="AI is reviewing your report" />
-      <div className="px-5 space-y-3">
-        {STEPS.map((label, i) => (
-          <SoftCard key={label} className="flex items-center gap-3 py-3">
-            <div className="h-8 w-8 rounded-full grid place-items-center bg-surface-muted">
-              {i < step ? (
-                <Check className="h-4 w-4 text-status-resolved" />
-              ) : i === step ? (
-                <Loader2 className="h-4 w-4 text-primary animate-spin" />
-              ) : (
-                <span className="h-2 w-2 rounded-full bg-muted-foreground/30" />
-              )}
+    <div className="min-h-screen px-6 pt-safe pb-safe flex flex-col items-center justify-center">
+      <motion.div animate={{ scale: [1, 1.08, 1], rotate: [0, 8, -8, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        className="h-24 w-24 rounded-3xl bg-primary text-primary-foreground grid place-items-center shadow-float">
+        <Sparkles className="h-11 w-11" strokeWidth={1.75} />
+      </motion.div>
+      <h1 className="mt-8 text-2xl font-semibold tracking-tight text-center">AI is reviewing your report</h1>
+      <p className="text-sm text-muted-foreground mt-2 text-center max-w-xs">Our model is analyzing the photo and matching it to the right agency.</p>
+      <div className="mt-10 w-full max-w-xs space-y-3">
+        {STEPS.map((s, i) => (
+          <div key={s} className="flex items-center gap-3 text-sm">
+            <div className={`h-6 w-6 rounded-full grid place-items-center transition ${i < step ? "bg-status-resolved/15 text-status-resolved" : i === step ? "bg-primary-soft text-primary" : "bg-surface-muted text-muted-foreground"}`}>
+              {i < step ? <Check className="h-3.5 w-3.5" /> : <span className="text-[10px] font-bold">{i + 1}</span>}
             </div>
-            <span className={`text-sm ${i <= step ? "text-foreground" : "text-muted-foreground"}`}>{label}</span>
-          </SoftCard>
+            <span className={i <= step ? "text-foreground" : "text-muted-foreground"}>{s}</span>
+          </div>
         ))}
-
-        {done && (
-          <SoftCard className="mt-2">
-            <h3 className="text-sm font-semibold">Result Summary</h3>
-            <dl className="mt-3 text-sm space-y-2">
-              <Row k="Detected Issue" v="Pothole" />
-              <Row k="Urgency Level" v="High" />
-              <Row k="Location" v="Auto-detected GPS" />
-              <Row k="Possible Office" v="City Engineering Office" />
-              <Row k="Community Tracking" v="Public report page created" />
-            </dl>
-            <div className="mt-5 flex flex-col gap-2">
-              <Button onClick={() => navigate(`/review/${id}`)} className="w-full h-12 rounded-full font-semibold">
-                Review Report
-              </Button>
-              <Button variant="ghost" onClick={() => navigate(`/r/${id}`)} className="w-full h-12 rounded-full font-medium">
-                Submit to Officials
-              </Button>
-            </div>
-          </SoftCard>
-        )}
       </div>
-    </div>
-  );
-}
-
-function Row({ k, v }: { k: string; v: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <dt className="text-muted-foreground">{k}</dt>
-      <dd className="font-medium text-foreground text-right">{v}</dd>
     </div>
   );
 }

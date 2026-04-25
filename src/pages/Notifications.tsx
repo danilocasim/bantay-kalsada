@@ -1,35 +1,38 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Bell } from "lucide-react";
 import { PageHeader, SoftCard, EmptyState } from "@/components/ui-kit";
-
-const SAMPLE = [
-  { group: "Report updates", items: ["Your pothole report was routed to City Engineering Office."] },
-  { group: "Nearby hazards", items: ["A flooded area was reported near your saved route."] },
-  { group: "Agency responses", items: ["The agency marked your report as in progress."] },
-  { group: "Community", items: ["Community members confirmed your report."] },
-];
+import { listNotifications } from "@/lib/dataSource";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Notifications() {
-  const empty = false;
+  const { user } = useAuth();
+  const [items, setItems] = useState<Awaited<ReturnType<typeof listNotifications>>>([]);
+  useEffect(() => { listNotifications(user?.uid ?? "demo-user").then(setItems); }, [user]);
+
   return (
     <div>
       <PageHeader title="Notifications" back />
-      <div className="px-5 space-y-5">
-        {empty ? (
-          <EmptyState title="You're all caught up" subtitle="New activity will show up here." />
-        ) : (
-          SAMPLE.map((g) => (
-            <div key={g.group}>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1 mb-2">{g.group}</h3>
-              <div className="space-y-2">
-                {g.items.map((t) => (
-                  <SoftCard key={t} className="py-3">
-                    <p className="text-sm">{t}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Just now</p>
-                  </SoftCard>
-                ))}
+      <div className="px-5 space-y-2.5">
+        {items.length === 0 ? (
+          <EmptyState title="You're all caught up" subtitle="Updates on your reports will appear here." />
+        ) : items.map((n) => (
+          <Link key={n.id} to={`/r/${n.reportId}`}>
+            <SoftCard className="p-4 hover:bg-surface-muted/50 transition">
+              <div className="flex items-start gap-3">
+                <div className={`h-9 w-9 rounded-xl grid place-items-center shrink-0 ${n.unread ? "bg-primary text-primary-foreground" : "bg-surface-muted text-muted-foreground"}`}>
+                  <Bell className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium text-sm">{n.title}</div>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{n.body}</p>
+                  <div className="text-[11px] text-muted-foreground mt-1.5">{n.at}</div>
+                </div>
+                {n.unread && <span className="h-2 w-2 rounded-full bg-primary mt-2" />}
               </div>
-            </div>
-          ))
-        )}
+            </SoftCard>
+          </Link>
+        ))}
       </div>
     </div>
   );

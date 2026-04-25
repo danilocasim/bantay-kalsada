@@ -1,105 +1,69 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/hooks/use-toast";
-import { PageHeader } from "@/components/ui-kit";
+import { isDemoMode } from "@/lib/dataSource";
+import { toast } from "sonner";
+import { ChevronLeft, Mail, Lock } from "lucide-react";
 
 export default function Auth({ signup = false }: { signup?: boolean }) {
   const navigate = useNavigate();
   const { signInEmail, signUpEmail, signInGoogle, signInAnon } = useAuth();
-  const [mode, setMode] = useState<"signin" | "signup">(signup ? "signup" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const handleEmail = async () => {
+    if (isDemoMode) return toast("Demo mode — connect Firebase to sign in.");
     setBusy(true);
     try {
-      if (mode === "signup") await signUpEmail(email, password);
+      if (signup) await signUpEmail(email, password);
       else await signInEmail(email, password);
-      navigate("/home", { replace: true });
-    } catch (err) {
-      toast({ title: "Sign-in failed", description: (err as Error).message, variant: "destructive" });
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleGoogle() {
-    setBusy(true);
-    try {
-      await signInGoogle();
-      navigate("/home", { replace: true });
-    } catch (err) {
-      toast({ title: "Google sign-in failed", description: (err as Error).message, variant: "destructive" });
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleAnon() {
-    setBusy(true);
-    try {
-      await signInAnon();
-      navigate("/home", { replace: true });
-    } catch (err) {
-      toast({ title: "Could not continue", description: (err as Error).message, variant: "destructive" });
-    } finally {
-      setBusy(false);
-    }
-  }
+      navigate("/home");
+    } catch (e) { toast.error((e as Error).message); } finally { setBusy(false); }
+  };
+  const handleGoogle = async () => {
+    if (isDemoMode) return toast("Demo mode — connect Firebase to sign in.");
+    try { await signInGoogle(); navigate("/home"); } catch (e) { toast.error((e as Error).message); }
+  };
+  const handleAnon = async () => {
+    if (isDemoMode) { toast("Demo mode — exploring without an account."); return navigate("/home"); }
+    try { await signInAnon(); navigate("/home"); } catch (e) { toast.error((e as Error).message); }
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      <PageHeader
-        title={mode === "signup" ? "Create account" : "Welcome back"}
-        subtitle={mode === "signup" ? "Join your community in keeping roads safe." : "Sign in to track your reports."}
-      />
-      <div className="px-5 pb-12 max-w-md mx-auto w-full">
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-12 rounded-xl" />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="h-12 rounded-xl" />
-          </div>
-          <Button type="submit" disabled={busy} className="w-full h-12 rounded-full text-base font-semibold">
-            {mode === "signup" ? "Create account" : "Sign in"}
-          </Button>
-        </form>
-
-        <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-          <div className="h-px flex-1 bg-border" />
-          or
-          <div className="h-px flex-1 bg-border" />
-        </div>
-
-        <div className="space-y-2.5">
-          <Button variant="outline" disabled={busy} onClick={handleGoogle} className="w-full h-12 rounded-full font-medium">
-            Continue with Google
-          </Button>
-          <Button variant="ghost" disabled={busy} onClick={handleAnon} className="w-full h-12 rounded-full font-medium text-muted-foreground">
-            Continue without an account
-          </Button>
-        </div>
-
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          {mode === "signup" ? "Already have an account?" : "New to Bantay Kalsada?"}{" "}
-          <button
-            type="button"
-            className="text-primary font-medium"
-            onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-          >
-            {mode === "signup" ? "Sign in" : "Create one"}
-          </button>
-        </p>
+    <div className="min-h-screen px-6 pt-safe pb-safe flex flex-col">
+      <button onClick={() => navigate(-1)} className="mt-4 -ml-1 h-9 w-9 rounded-full grid place-items-center hover:bg-muted">
+        <ChevronLeft className="h-5 w-5" />
+      </button>
+      <div className="mt-8">
+        <h1 className="text-3xl font-semibold tracking-tight">{signup ? "Create account" : "Welcome back"}</h1>
+        <p className="text-sm text-muted-foreground mt-2">{signup ? "Start reporting and tracking road issues." : "Sign in to continue."}</p>
       </div>
+      <div className="mt-8 space-y-3">
+        <div className="relative">
+          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
+            className="w-full py-4 pl-11 pr-4 rounded-2xl bg-surface-muted border border-transparent focus:border-primary focus:bg-surface outline-none text-[15px]" />
+        </div>
+        <div className="relative">
+          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
+            className="w-full py-4 pl-11 pr-4 rounded-2xl bg-surface-muted border border-transparent focus:border-primary focus:bg-surface outline-none text-[15px]" />
+        </div>
+        <button onClick={handleEmail} disabled={busy} className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-semibold text-[15px] shadow-soft active:scale-[0.99] transition disabled:opacity-60">
+          {signup ? "Create account" : "Sign in"}
+        </button>
+      </div>
+      <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="h-px flex-1 bg-border" />or<div className="h-px flex-1 bg-border" />
+      </div>
+      <div className="space-y-2.5">
+        <button onClick={handleGoogle} className="w-full py-4 rounded-2xl bg-surface border border-border font-medium text-[15px] hover:bg-muted transition">Continue with Google</button>
+        <button onClick={handleAnon} className="w-full py-4 rounded-2xl bg-transparent text-foreground font-medium text-[15px] hover:bg-muted transition">Report without an account</button>
+      </div>
+      <p className="mt-auto text-center text-sm text-muted-foreground">
+        {signup ? (<>Already have an account? <Link className="text-primary font-medium" to="/auth">Sign in</Link></>) : (<>New here? <Link className="text-primary font-medium" to="/auth/signup">Create account</Link></>)}
+      </p>
     </div>
   );
 }

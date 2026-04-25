@@ -1,54 +1,45 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { MapPin, ShieldCheck, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Camera, MapPin, ShieldCheck } from "lucide-react";
+
+const slides = [
+  { icon: Camera, title: "Spot it. Snap it.", body: "Capture potholes, floods, broken signs, or any road hazard in seconds." },
+  { icon: MapPin, title: "Pin the location", body: "We auto-detect where you are, or drop a pin precisely on the map." },
+  { icon: ShieldCheck, title: "Routed to the right agency", body: "AI triages each report and sends it straight to the team that can fix it." },
+];
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const finish = () => {
-    localStorage.setItem("bk_onboarded", "1");
-    navigate("/auth");
-  };
+  const [i, setI] = useState(0);
+  const slide = slides[i];
+  const Icon = slide.icon;
+  const next = () => (i < slides.length - 1 ? setI(i + 1) : navigate("/auth"));
+
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <div className="flex-1 px-6 pt-16 pb-6 flex flex-col">
-        <div className="mx-auto mb-10 relative">
-          <div className="h-44 w-44 rounded-[2.5rem] bg-primary-soft grid place-items-center">
-            <MapPin className="h-20 w-20 text-primary" strokeWidth={1.5} />
-          </div>
-          <div className="absolute -bottom-3 -right-3 h-14 w-14 rounded-2xl bg-status-resolved/15 grid place-items-center">
-            <ShieldCheck className="h-7 w-7 text-status-resolved" />
-          </div>
-          <div className="absolute -top-3 -left-3 h-12 w-12 rounded-2xl bg-status-pothole/15 grid place-items-center">
-            <Sparkles className="h-6 w-6 text-status-pothole" />
-          </div>
+    <div className="min-h-screen flex flex-col px-6 pt-safe pb-safe">
+      <div className="flex justify-between items-center pt-4">
+        <div className="flex gap-1.5">
+          {slides.map((_, idx) => (
+            <span key={idx} className={`h-1.5 rounded-full transition-all ${idx === i ? "w-6 bg-primary" : "w-1.5 bg-border"}`} />
+          ))}
         </div>
-
-        <h1 className="text-[34px] leading-[1.1] font-semibold tracking-tight text-center text-foreground">
-          Report road problems.
-          <br />
-          Help your community move safer.
-        </h1>
-        <p className="mt-4 text-center text-muted-foreground text-base max-w-sm mx-auto">
-          Submit road hazards with photo and GPS. AI helps route them to the right
-          government office and track progress publicly.
-        </p>
-
-        <div className="mt-auto pt-10 flex flex-col items-center gap-4 pb-safe">
-          <Button
-            size="lg"
-            className="w-full max-w-sm rounded-full h-12 text-base font-semibold"
-            onClick={finish}
-          >
-            Get Started
-          </Button>
-          <button
-            onClick={() => navigate("/map")}
-            className="text-primary text-sm font-medium"
-          >
-            View Public Map
-          </button>
-        </div>
+        <button onClick={() => navigate("/auth")} className="text-sm text-muted-foreground">Skip</button>
       </div>
+      <div className="flex-1 grid place-items-center">
+        <AnimatePresence mode="wait">
+          <motion.div key={i} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.25 }} className="text-center max-w-sm">
+            <div className="mx-auto mb-8 h-24 w-24 rounded-3xl bg-primary-soft text-primary grid place-items-center">
+              <Icon className="h-11 w-11" strokeWidth={1.75} />
+            </div>
+            <h2 className="text-3xl font-semibold tracking-tight">{slide.title}</h2>
+            <p className="text-base text-muted-foreground mt-3 leading-relaxed">{slide.body}</p>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <button onClick={next} className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-semibold text-[15px] shadow-soft active:scale-[0.99] transition mb-3">
+        {i < slides.length - 1 ? "Continue" : "Get Started"}
+      </button>
     </div>
   );
 }

@@ -1,74 +1,88 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
-import { getDb } from "@/lib/firebase";
-import { CATEGORY_LABEL, type Report } from "@/lib/types";
+import { MapContainer, TileLayer, CircleMarker } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 import { PageHeader, SoftCard, SeverityBadge, StatusBadge } from "@/components/ui-kit";
+import { listAgencyReports } from "@/lib/dataSource";
+import { CATEGORY_COLOR, CATEGORY_LABEL, type Report } from "@/lib/types";
+
+type Sort = "urgency" | "newest" | "confirms";
 
 export default function AgencyDashboard() {
   const [reports, setReports] = useState<Report[]>([]);
+  const [sort, setSort] = useState<Sort>("urgency");
+  useEffect(() => { listAgencyReports("demo-mmda").then(setReports); }, []);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const snap = await getDocs(query(collection(getDb(), "reports"), orderBy("createdAt", "desc"), limit(50)));
-        setReports(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Report, "id">) })));
-      } catch {/* */}
-    })();
-  }, []);
+  const sorted = useMemo(() => {
+    const copy = [...reports];
+    if (sort === "urgency") copy.sort((a, b) => b.urgencyScore - a.urgencyScore);
+    if (sort === "confirms") copy.sort((a, b) => b.confirmCount - a.confirmCount);
+    return copy;
+  }, [reports, sort]);
 
-  const counts = {
-    new: reports.filter((r) => r.status === "submitted").length,
-    high: reports.filter((r) => r.severity === "high").length,
-    awaiting: reports.filter((r) => r.status === "routed").length,
-    inProgress: reports.filter((r) => r.status === "in_progress").length,
-    resolved: reports.filter((r) => r.status === "resolved").length,
-  };
+  const open = reports.filter((r) => !["resolved", "community_verified"].includes(r.status)).length;
+  const high = reports.filter((r) => r.severity === "high").length;
 
   return (
     <div>
-      <PageHeader title="Agency Dashboard" subtitle="City Engineering Office" />
-      <div className="px-5 space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <Stat label="New Reports" value={counts.new} tone="primary" />
-          <Stat label="High Priority" value={counts.high} tone="status-urgent" />
-          <Stat label="Awaiting Action" value={counts.awaiting} tone="status-pothole" />
-          <Stat label="In Progress" value={counts.inProgress} tone="status-flood" />
-        </div>
-
-        <SoftCard>
-          <h3 className="text-sm font-semibold mb-3">Active Cases</h3>
-          <div className="space-y-3">
-            {reports.slice(0, 10).map((r) => (
-              <Link key={r.id} to={`/agency/case/${r.id}`} className="flex items-center gap-3 py-1">
-                <div className="h-12 w-12 rounded-xl bg-surface-muted overflow-hidden shrink-0">
-                  {r.photoURLs[0] && <img src={r.photoURLs[0]} alt="" className="h-full w-full object-cover" />}
+      <PageHeader title="Agency Dashboard" subtitle="Triage queue and live map" />
+      <div className="px-5 grid grid-cols-3 gap-3">
+        <Stat label="Open" value={open} />
+        <Stat label="High" value={high} tone="text-status-urgent" />
+        <Stat label="Total" value={reports.length} />
+      </div>
+      <div className="mx-5 mt-4 rounded-2xl overflow-hidden border border-border h-56">
+        <MapContainer center={[14.6, 121.03]} zoom={11} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false}>
+          <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          {reports.map((r) => (
+            <CircleMarker key={r.id} center={[r.geo.lat, r.geo.lng]} radius={r.severity === "high" ? 14 : 10}
+              pathOptions={{ color: CATEGORY_COLOR[r.category], fillColor: CATEGORY_COLOR[r.category], fillOpacity: 0.4 }} />
+          ))}
+        </MapContainer>
+      </div>
+      <div className="px-5 mt-5 flex items-center justify-between">
+        <h2 className="text-base font-semibold tracking-tight">Queue</h2>
+        <select value={sort} onChange={(e) => setSort(e.target.value as Sort)}
+          className="text-xs bg-surface-muted rounded-full px-3 py-1.5 border-none outline-none">
+          <option value="urgency">Sort: Urgency</option>
+          <option value="confirms">Sort: Confirms</option>
+          <option value="newest">Sort: Newest</option>
+        </select>
+      </div>
+      <div className="px-5 mt-3 space-y-2.5">
+        {sorted.map((r) => (
+          <Link key={r.id} to={`/agency/case/${r.id}`}>
+            <SoftCard className="p-4 hover:bg-surface-muted/50 transition">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs text-muted-foreground">{CATEGORY_LABEL[r.category]} · {r.barangay}</div>
+                  <div className="font-medium text-[15px] mt-0.5 truncate">{r.title}</div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold truncate">{r.title}</span>
-                    <SeverityBadge severity={r.severity} />
-                  </div>
-                  <p className="text-xs text-muted-foreground truncate">{CATEGORY_LABEL[r.category]} · {r.confirmCount} confirmations</p>
-                  <div className="mt-1"><StatusBadge status={r.status} /></div>
+                <div className="text-right">
+                  <div className="text-[11px] text-muted-foreground">Urgency</div>
+                  <div className="text-lg font-semibold tracking-tight">{r.urgencyScore}</div>
                 </div>
-              </Link>
-            ))}
-          </div>
-        </SoftCard>
+              </div>
+              <div className="mt-2.5 flex items-center justify-between">
+                <div className="flex gap-2">
+                  <SeverityBadge severity={r.severity} />
+                  <StatusBadge status={r.status} />
+                </div>
+                <span className="text-xs text-muted-foreground">{r.confirmCount} confirms</span>
+              </div>
+            </SoftCard>
+          </Link>
+        ))}
       </div>
     </div>
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: number; tone: string }) {
+function Stat({ label, value, tone = "text-foreground" }: { label: string; value: number; tone?: string }) {
   return (
-    <div
-      className="rounded-2xl p-4 border border-border/70 shadow-soft"
-      style={{ backgroundColor: `hsl(var(--${tone}) / 0.08)` }}
-    >
-      <div className="text-2xl font-semibold" style={{ color: `hsl(var(--${tone}))` }}>{value}</div>
-      <div className="text-xs text-muted-foreground mt-1">{label}</div>
+    <div className="rounded-2xl bg-surface border border-border p-4">
+      <div className={`text-2xl font-semibold tracking-tight ${tone}`}>{value}</div>
+      <div className="text-[11px] text-muted-foreground uppercase tracking-wide mt-0.5">{label}</div>
     </div>
   );
 }

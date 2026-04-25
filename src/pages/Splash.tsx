@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Splash() {
@@ -8,23 +9,26 @@ export default function Splash() {
 
   useEffect(() => {
     if (loading) return;
-    const seen = localStorage.getItem("bk_onboarded");
-    const t = setTimeout(() => {
-      if (user) navigate("/home", { replace: true });
-      else if (seen) navigate("/auth", { replace: true });
-      else navigate("/onboarding", { replace: true });
-    }, 700);
+    const t = setTimeout(() => navigate(user ? "/home" : "/onboarding"), 1500);
     return () => clearTimeout(t);
-  }, [user, loading, navigate]);
+  }, [loading, user, navigate]);
 
   return (
     <div className="min-h-screen grid place-items-center bg-background">
-      <div className="flex flex-col items-center gap-4">
-        <div className="h-16 w-16 rounded-2xl bg-primary text-primary-foreground grid place-items-center text-2xl font-bold shadow-float">
+      <motion.div
+        initial={{ opacity: 0, y: 8, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="flex flex-col items-center gap-4"
+      >
+        <div className="h-20 w-20 rounded-3xl bg-primary text-primary-foreground grid place-items-center shadow-float text-3xl font-bold tracking-tight">
           BK
         </div>
-        <p className="text-sm text-muted-foreground">Bantay Kalsada</p>
-      </div>
+        <div className="text-center">
+          <h1 className="text-2xl font-semibold tracking-tight">Bantay Kalsada</h1>
+          <p className="text-sm text-muted-foreground mt-1">Safer roads, together.</p>
+        </div>
+      </motion.div>
     </div>
   );
 }
