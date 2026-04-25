@@ -3,12 +3,10 @@ import { Link } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { PageHeader, SoftCard, EmptyState } from "@/components/ui-kit";
 import { listNotifications } from "@/lib/dataSource";
-import { useAuth } from "@/contexts/AuthContext";
 
 export default function Notifications() {
-  const { user } = useAuth();
   const [items, setItems] = useState<Awaited<ReturnType<typeof listNotifications>>>([]);
-  useEffect(() => { listNotifications(user?.uid ?? "demo-user").then(setItems); }, [user]);
+  useEffect(() => { listNotifications("demo-user").then(setItems); }, []);
 
   return (
     <div>

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Camera, MapPin, ChevronRight, ChevronLeft, X } from "lucide-react";
 import { toast } from "sonner";
 import { CATEGORY_LABEL, type Category } from "@/lib/types";
-import { isDemoMode } from "@/lib/dataSource";
 
 type Step = 1 | 2 | 3;
 
@@ -29,10 +28,7 @@ export default function ReportFlow() {
       () => { setCoords({ lat: 14.6, lng: 121.03 }); toast("Using approximate location"); }
     );
   };
-  const submit = () => {
-    if (isDemoMode) { toast("Demo mode — connect Firebase to actually submit."); navigate("/analyze/demo-1"); return; }
-    navigate("/analyze/new");
-  };
+  const submit = () => navigate("/analyze/demo-1");
 
   return (
     <div className="min-h-screen flex flex-col px-5 pt-safe pb-safe">

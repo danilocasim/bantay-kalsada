@@ -1,12 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { BottomNav } from "./BottomNav";
 
-const NAV_HIDDEN = new Set([
-  "/",
-  "/onboarding",
-  "/auth",
-  "/auth/signup",
-]);
+const NAV_HIDDEN = new Set(["/", "/onboarding"]);
 
 export function AppShell() {
   const { pathname } = useLocation();

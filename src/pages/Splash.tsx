@@ -1,17 +1,14 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useAuth } from "@/contexts/AuthContext";
 
 export default function Splash() {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
-
   useEffect(() => {
-    if (loading) return;
-    const t = setTimeout(() => navigate(user ? "/home" : "/onboarding"), 1500);
+    const seen = localStorage.getItem("bk_onboarded");
+    const t = setTimeout(() => navigate(seen ? "/home" : "/onboarding"), 1500);
     return () => clearTimeout(t);
-  }, [loading, user, navigate]);
+  }, [navigate]);
 
   return (
     <div className="min-h-screen grid place-items-center bg-background">

@@ -2,13 +2,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Sparkles, TrendingUp } from "lucide-react";
 import { PageHeader, SoftCard, SeverityBadge, StatusBadge } from "@/components/ui-kit";
-import { useAuth } from "@/contexts/AuthContext";
 import { listReports, getHomeInsight } from "@/lib/dataSource";
 import { CATEGORY_LABEL, type Report } from "@/lib/types";
 import { DEMO_INSIGHT } from "@/lib/demoData";
 
 export default function Home() {
-  const { user } = useAuth();
   const [reports, setReports] = useState<Report[]>([]);
   const [insight, setInsight] = useState(DEMO_INSIGHT);
 
@@ -17,11 +15,9 @@ export default function Home() {
     getHomeInsight().then(setInsight);
   }, []);
 
-  const greeting = user?.displayName ? `Hi, ${user.displayName.split(" ")[0]}` : "Hello there";
-
   return (
     <div>
-      <PageHeader title={greeting} subtitle="What's happening on the roads near you?" />
+      <PageHeader title="Hello there" subtitle="What's happening on the roads near you?" />
       <div className="px-5">
         <Link to="/report" className="flex items-center gap-3 p-4 rounded-2xl bg-primary text-primary-foreground shadow-float active:scale-[0.99] transition">
           <div className="h-11 w-11 rounded-2xl bg-primary-foreground/15 grid place-items-center">
