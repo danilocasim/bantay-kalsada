@@ -9,7 +9,7 @@ const LEVELS = [
 export default function Urgency() {
   return (
     <div>
-      <PageHeader title="Urgency levels" subtitle="How we prioritize reports" back />
+      <PageHeader title="How priority works" subtitle="Why some reports move faster than others" back />
       <div className="px-5 space-y-3">
         {LEVELS.map((l) => (
           <SoftCard key={l.name}>

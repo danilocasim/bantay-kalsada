@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, MapPin, ShieldCheck } from "lucide-react";
+import { Camera, ClipboardList, ShieldCheck } from "lucide-react";
 
 const slides = [
-  { icon: Camera, title: "Spot it. Snap it.", body: "Capture potholes, floods, broken signs, or any road hazard in seconds." },
-  { icon: MapPin, title: "Pin the location", body: "We auto-detect where you are, or drop a pin precisely on the map." },
-  { icon: ShieldCheck, title: "Routed to the right agency", body: "AI triages each report and sends it straight to the team that can fix it." },
+  { icon: Camera, title: "Report in minutes", body: "Snap a clear photo, add the location, and send a road hazard report in just a few taps." },
+  { icon: ClipboardList, title: "Track what happens next", body: "See when your report is reviewed, routed, acknowledged, and marked resolved." },
+  { icon: ShieldCheck, title: "Help confirm what is still unresolved", body: "Nearby residents can confirm the same issue and reopen cases that were not truly fixed." },
 ];
 
 export default function Onboarding() {

@@ -23,7 +23,7 @@ export default function Splash() {
         </div>
         <div className="text-center">
           <h1 className="text-2xl font-semibold tracking-tight">Bantay Kalsada</h1>
-          <p className="text-sm text-muted-foreground mt-1">Safer roads, together.</p>
+          <p className="text-sm text-muted-foreground mt-1">Report road issues. Track real progress.</p>
         </div>
       </motion.div>
     </div>

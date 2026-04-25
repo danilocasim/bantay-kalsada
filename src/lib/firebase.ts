@@ -1,6 +1,7 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
-import { getAuth, type Auth } from "firebase/auth";
+import { getAuth, signInAnonymously, type Auth, type User } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
+import { getFunctions, type Functions } from "firebase/functions";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
 
 /**
@@ -34,6 +35,7 @@ let app: FirebaseApp | null = null;
 let _auth: Auth | null = null;
 let _db: Firestore | null = null;
 let _storage: FirebaseStorage | null = null;
+let _functions: Functions | null = null;
 
 function ensureApp(): FirebaseApp {
   if (!isFirebaseConfigured) {
@@ -60,6 +62,21 @@ export function getDb(): Firestore {
 export function getBucket(): FirebaseStorage {
   if (!_storage) _storage = getStorage(ensureApp());
   return _storage;
+}
+
+export function getFirebaseFunctions(): Functions {
+  if (!_functions) _functions = getFunctions(ensureApp());
+  return _functions;
+}
+
+export async function ensureSignedInUser(): Promise<User | null> {
+  if (!isFirebaseConfigured) return null;
+
+  const auth = getFirebaseAuth();
+  if (auth.currentUser) return auth.currentUser;
+
+  const credential = await signInAnonymously(auth);
+  return credential.user;
 }
 
 export const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY as string | undefined;

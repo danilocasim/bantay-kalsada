@@ -9,11 +9,11 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* Bantay Kalsada — Apple-like civic palette */
-    --background: 40 20% 98%;            /* #FAFAF9 warm near-white */
-    --foreground: 240 6% 11%;            /* #1C1C1E graphite */
+    --background: 40 20% 98%; /* #FAFAF9 warm near-white */
+    --foreground: 240 6% 11%; /* #1C1C1E graphite */
 
-    --surface: 0 0% 100%;                /* pure white card */
-    --surface-muted: 240 10% 96%;        /* light gray section */
+    --surface: 0 0% 100%; /* pure white card */
+    --surface-muted: 240 10% 96%; /* light gray section */
 
     --card: 0 0% 100%;
     --card-foreground: 240 6% 11%;
@@ -22,9 +22,9 @@ All colors MUST be HSL.
     --popover-foreground: 240 6% 11%;
 
     /* Signal blue — primary action */
-    --primary: 211 100% 52%;             /* #0A84FF */
+    --primary: 211 100% 52%; /* #0A84FF */
     --primary-foreground: 0 0% 100%;
-    --primary-soft: 211 100% 96%;        /* tinted background for selected/info */
+    --primary-soft: 211 100% 96%; /* tinted background for selected/info */
 
     --secondary: 240 10% 96%;
     --secondary-foreground: 240 6% 11%;
@@ -39,21 +39,23 @@ All colors MUST be HSL.
     --destructive-foreground: 0 0% 100%;
 
     /* Status colors (urgency / category) */
-    --status-urgent: 0 84% 55%;          /* red */
-    --status-pothole: 28 92% 54%;        /* orange */
-    --status-flood: 211 100% 52%;        /* blue */
-    --status-drainage: 270 70% 58%;      /* purple */
-    --status-resolved: 145 63% 42%;      /* green */
-    --status-pending: 240 5% 60%;        /* gray */
+    --status-urgent: 0 84% 55%; /* red */
+    --status-pothole: 28 92% 54%; /* orange */
+    --status-flood: 211 100% 52%; /* blue */
+    --status-drainage: 270 70% 58%; /* purple */
+    --status-resolved: 145 63% 42%; /* green */
+    --status-pending: 240 5% 60%; /* gray */
 
-    --border: 240 8% 92%;                /* hairline */
+    --border: 240 8% 92%; /* hairline */
     --input: 240 8% 92%;
     --ring: 211 100% 52%;
 
-    --radius: 1rem;                      /* rounded 2xl-ish */
+    --radius: 1rem; /* rounded 2xl-ish */
 
-    --shadow-soft: 0 1px 2px hsl(240 6% 10% / 0.04), 0 8px 24px -12px hsl(240 6% 10% / 0.10);
-    --shadow-float: 0 2px 6px hsl(240 6% 10% / 0.06), 0 16px 40px -12px hsl(240 6% 10% / 0.18);
+    --shadow-soft:
+      0 1px 2px hsl(240 6% 10% / 0.04), 0 8px 24px -12px hsl(240 6% 10% / 0.1);
+    --shadow-float:
+      0 2px 6px hsl(240 6% 10% / 0.06), 0 16px 40px -12px hsl(240 6% 10% / 0.18);
 
     --transition-spring: cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -120,7 +122,8 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
       "Inter", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-feature-settings: "ss01", "cv01";
     -webkit-font-smoothing: antialiased;
@@ -137,11 +140,96 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
-  .shadow-soft { box-shadow: var(--shadow-soft); }
-  .shadow-float { box-shadow: var(--shadow-float); }
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+  .shadow-float {
+    box-shadow: var(--shadow-float);
+  }
   .glass {
     background: hsl(0 0% 100% / 0.78);
     backdrop-filter: saturate(180%) blur(20px);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
   }
+}
+
+.leaflet-div-icon.bk-report-marker-wrapper {
+  background: transparent;
+  border: none;
+}
+
+.bk-report-marker {
+  position: relative;
+  width: 48px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  transform-origin: center;
+  transition:
+    transform 180ms var(--transition-spring),
+    filter 180ms ease;
+}
+
+.bk-report-marker__halo,
+.bk-report-marker__pin,
+.bk-report-marker__badge {
+  position: absolute;
+}
+
+.bk-report-marker__halo {
+  top: 2px;
+  left: 6px;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 2px solid var(--severity-color);
+  background: hsl(0 0% 100% / 0.25);
+  opacity: 0.7;
+}
+
+.bk-report-marker__pin {
+  inset: 0;
+  color: var(--marker-color);
+  display: grid;
+  place-items: start center;
+  filter: drop-shadow(0 5px 12px hsl(240 6% 10% / 0.18));
+}
+
+.bk-report-marker__pin svg {
+  width: 48px;
+  height: 56px;
+}
+
+.bk-report-marker__badge {
+  top: 7px;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: hsl(var(--surface));
+  border: 1.5px solid var(--marker-color);
+  color: var(--marker-color);
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow-soft);
+}
+
+.bk-report-marker__badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+.bk-report-marker--selected {
+  transform: scale(1.1);
+  filter: drop-shadow(0 8px 18px hsl(240 6% 10% / 0.18));
+}
+
+.bk-report-marker--selected .bk-report-marker__halo {
+  opacity: 1;
+  border-width: 3px;
+}
+
+.bk-report-marker--selected .bk-report-marker__badge {
+  border-width: 2px;
 }

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { FirebaseSetupGate } from "@/components/FirebaseSetupGate";
 import { AppShell } from "@/components/AppShell";
+import { SessionProvider } from "@/lib/session";
 
 import Splash from "@/pages/Splash";
 import Onboarding from "@/pages/Onboarding";
@@ -30,27 +31,29 @@ const App = () => (
       <Toaster />
       <Sonner />
       <FirebaseSetupGate>
-        <BrowserRouter>
-          <Routes>
-            <Route element={<AppShell />}>
-              <Route path="/" element={<Splash />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/home" element={<Home />} />
-              <Route path="/map" element={<PublicMap />} />
-              <Route path="/report" element={<ReportFlow />} />
-              <Route path="/analyze/:id" element={<AIAnalysis />} />
-              <Route path="/review/:id" element={<ReportReview />} />
-              <Route path="/track" element={<Track />} />
-              <Route path="/urgency" element={<Urgency />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/notifications" element={<Notifications />} />
-              <Route path="/r/:id" element={<ReportDetail />} />
-              <Route path="/agency" element={<AgencyDashboard />} />
-              <Route path="/agency/case/:id" element={<AgencyCaseDetail />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
+        <SessionProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route element={<AppShell />}>
+                <Route path="/" element={<Splash />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/home" element={<Home />} />
+                <Route path="/map" element={<PublicMap />} />
+                <Route path="/report" element={<ReportFlow />} />
+                <Route path="/analyze/:id" element={<AIAnalysis />} />
+                <Route path="/review/:id" element={<ReportReview />} />
+                <Route path="/track" element={<Track />} />
+                <Route path="/urgency" element={<Urgency />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/notifications" element={<Notifications />} />
+                <Route path="/r/:id" element={<ReportDetail />} />
+                <Route path="/agency" element={<AgencyDashboard />} />
+                <Route path="/agency/case/:id" element={<AgencyCaseDetail />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </SessionProvider>
       </FirebaseSetupGate>
     </TooltipProvider>
   </QueryClientProvider>

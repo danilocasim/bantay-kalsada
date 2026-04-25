@@ -1,28 +1,48 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Info, Shield } from "lucide-react";
+import { Bell, Info, Shield, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
+import { IdentityVerificationFlow } from "@/components/IdentityVerificationFlow";
 import { PageHeader, SoftCard } from "@/components/ui-kit";
-import { listMyReports } from "@/lib/dataSource";
-import type { Report } from "@/lib/types";
+import { DEMO_USER_ID, getIdentityVerification, listMyReports, submitIdentityVerification } from "@/lib/dataSource";
+import { useSession } from "@/lib/session";
+import type { IdentityVerification, Report } from "@/lib/types";
 
 export default function Profile() {
   const navigate = useNavigate();
+  const session = useSession();
   const [reports, setReports] = useState<Report[]>([]);
-  useEffect(() => { listMyReports("demo-user").then(setReports); }, []);
+  const [verification, setVerification] = useState<IdentityVerification>({ status: "unverified" });
 
-  const resolved = reports.filter((r) => ["resolved", "community_verified"].includes(r.status)).length;
-  const confirms = reports.reduce((s, r) => s + r.confirmCount, 0);
+  useEffect(() => {
+    if (!session.isReady) return;
+    const uid = session.userId ?? DEMO_USER_ID;
+    listMyReports(uid).then(setReports);
+    getIdentityVerification(uid).then(setVerification);
+  }, [session.isReady, session.userId]);
+
+  const resolved = reports.filter((report) => ["resolved", "community_verified"].includes(report.status)).length;
+  const confirms = reports.reduce((sum, report) => sum + report.confirmCount, 0);
+
+  const handleVerificationSubmit = async (input: { idImageURL: string; selfieImageURL: string }) => {
+    const next = await submitIdentityVerification(session.userId ?? DEMO_USER_ID, input);
+    setVerification(next);
+    toast.success("Verification submitted for review.");
+  };
 
   return (
     <div>
-      <PageHeader title="Profile" />
-      <div className="px-5">
+      <PageHeader title="Profile" subtitle="Manage your trust status, notifications, and contribution history." />
+      <div className="px-5 pb-8">
         <SoftCard>
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 rounded-full bg-primary text-primary-foreground grid place-items-center text-xl font-semibold">D</div>
-            <div className="min-w-0">
-              <div className="font-semibold text-base truncate">Demo Citizen</div>
-              <div className="text-xs text-muted-foreground">Browsing in demo mode</div>
+            <div className="min-w-0 flex-1">
+              <div className="font-semibold text-base truncate">Community Reporter</div>
+              <div className="text-xs text-muted-foreground mt-0.5">{session.isDemo ? "Pilot participant · local-first prototype mode" : session.isAnonymous ? "Pilot participant · anonymous account" : "Pilot participant"}</div>
+            </div>
+            <div className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${verification.status === "verified" ? "bg-status-resolved/10 text-status-resolved" : verification.status === "pending_review" ? "bg-primary-soft text-primary" : verification.status === "rejected" ? "bg-status-urgent/10 text-status-urgent" : "bg-surface-muted text-muted-foreground"}`}>
+              {verification.status.replace("_", " ")}
             </div>
           </div>
           <div className="mt-5 grid grid-cols-3 gap-3 text-center">
@@ -31,9 +51,24 @@ export default function Profile() {
             <Stat label="Confirms" value={confirms} />
           </div>
         </SoftCard>
+
+        <SoftCard className="mt-5 bg-primary-soft">
+          <div className="flex items-start gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-primary text-primary-foreground grid place-items-center shrink-0">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold">Trust and verification</div>
+              <p className="text-xs text-muted-foreground mt-1">Verification is optional in the pilot. It helps reduce duplicate accounts and improves trust in reports and confirmations.</p>
+            </div>
+          </div>
+        </SoftCard>
+
+        <IdentityVerificationFlow verification={verification} onSubmit={handleVerificationSubmit} />
+
         <div className="mt-5 space-y-1">
           <Row icon={Bell} label="Notifications" onClick={() => navigate("/notifications")} />
-          <Row icon={Shield} label="Urgency levels" onClick={() => navigate("/urgency")} />
+          <Row icon={Shield} label="How priority works" onClick={() => navigate("/urgency")} />
           <Row icon={Info} label="About Bantay Kalsada" />
         </div>
       </div>

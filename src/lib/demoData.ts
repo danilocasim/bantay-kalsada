@@ -1,7 +1,29 @@
-import type { Report } from "./types";
+import type { Report, ReportStatus, StatusEvent } from "./types";
 
-// Seeded demo reports — used when Firebase env vars aren't configured.
-// Coordinates roughly around Quezon City / Manila for realism.
+const makeDemoPhoto = (label: string, start = "#0A84FF", end = "#6EA8FF"): string =>
+  `data:image/svg+xml;utf8,${encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+      <defs>
+        <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+          <stop stop-color="${start}" offset="0%" />
+          <stop stop-color="${end}" offset="100%" />
+        </linearGradient>
+      </defs>
+      <rect width="1200" height="900" fill="url(#bg)" rx="36" />
+      <rect x="90" y="90" width="1020" height="720" fill="rgba(255,255,255,0.16)" rx="28" />
+      <text x="600" y="410" fill="white" font-size="72" font-family="Inter, Arial, sans-serif" text-anchor="middle" font-weight="700">${label}</text>
+      <text x="600" y="490" fill="rgba(255,255,255,0.82)" font-size="28" font-family="Inter, Arial, sans-serif" text-anchor="middle">Bantay Kalsada demo evidence</text>
+    </svg>
+  `)}`;
+
+const makeEvent = (id: string, status: ReportStatus, atLabel: string, note: string): StatusEvent => ({
+  id,
+  status,
+  atLabel,
+  note,
+});
+
+// Seeded reports used for local-first and demo flows.
 export const DEMO_REPORTS: Report[] = [
   {
     id: "demo-1",
@@ -19,12 +41,21 @@ export const DEMO_REPORTS: Report[] = [
     agencyName: "DPWH NCR",
     reporterUid: "demo-user",
     anonymous: false,
-    photoURLs: [],
+    photoURLs: [makeDemoPhoto("Pothole", "#E76F00", "#F8B35D")],
     aiSummary: "Severe road surface failure approximately 80cm wide. Immediate repair recommended.",
     aiCategory: "pothole",
     aiSeverity: "high",
     confirmCount: 12,
     urgencyScore: 87,
+    updatedLabel: "2h ago",
+    statusEvents: [
+      makeEvent("demo-1-submitted", "submitted", "3d ago", "Report received from the community."),
+      makeEvent("demo-1-reviewed", "ai_reviewed", "3d ago", "Reviewed and categorized as a pothole hazard."),
+      makeEvent("demo-1-routed", "routed", "2d ago", "Sent to DPWH NCR for field action."),
+      makeEvent("demo-1-ack", "acknowledged", "1d ago", "DPWH NCR confirmed receipt of the case."),
+      makeEvent("demo-1-progress", "in_progress", "2h ago", "Repair crew dispatched to the location."),
+    ],
+    confirmedBy: ["demo-user-2", "demo-user-3"],
   },
   {
     id: "demo-2",
@@ -42,12 +73,19 @@ export const DEMO_REPORTS: Report[] = [
     agencyName: "MMDA",
     reporterUid: "demo-user-2",
     anonymous: false,
-    photoURLs: [],
+    photoURLs: [makeDemoPhoto("Flooded Area", "#0A84FF", "#63B3FF")],
     aiSummary: "Flash flooding likely caused by clogged drainage. Requires pump deployment.",
     aiCategory: "flood",
     aiSeverity: "high",
     confirmCount: 28,
     urgencyScore: 94,
+    updatedLabel: "45m ago",
+    statusEvents: [
+      makeEvent("demo-2-submitted", "submitted", "Today", "Report received from the community."),
+      makeEvent("demo-2-reviewed", "ai_reviewed", "Today", "Reviewed as a flooding case."),
+      makeEvent("demo-2-routed", "routed", "1h ago", "Sent to MMDA for field response."),
+      makeEvent("demo-2-ack", "acknowledged", "45m ago", "MMDA acknowledged the report and is coordinating response."),
+    ],
   },
   {
     id: "demo-3",
@@ -65,12 +103,18 @@ export const DEMO_REPORTS: Report[] = [
     agencyName: "MMDA",
     reporterUid: "demo-user-3",
     anonymous: true,
-    photoURLs: [],
+    photoURLs: [makeDemoPhoto("Open Manhole", "#DC2626", "#F97316")],
     aiSummary: "Open manhole on a major thoroughfare. High night-time risk.",
     aiCategory: "manhole",
     aiSeverity: "high",
     confirmCount: 6,
     urgencyScore: 91,
+    updatedLabel: "5h ago",
+    statusEvents: [
+      makeEvent("demo-3-submitted", "submitted", "Yesterday", "Report received from the community."),
+      makeEvent("demo-3-reviewed", "ai_reviewed", "Yesterday", "Reviewed and categorized as a critical road hazard."),
+      makeEvent("demo-3-routed", "routed", "5h ago", "Sent to MMDA and local engineering office for response."),
+    ],
   },
   {
     id: "demo-4",
@@ -88,12 +132,19 @@ export const DEMO_REPORTS: Report[] = [
     agencyName: "MMDA",
     reporterUid: "demo-user",
     anonymous: false,
-    photoURLs: [],
+    photoURLs: [makeDemoPhoto("Broken Sign", "#7C3AED", "#A78BFA")],
     aiSummary: "Damaged regulatory signage. Replacement scheduled.",
     aiCategory: "sign",
     aiSeverity: "moderate",
     confirmCount: 3,
     urgencyScore: 62,
+    updatedLabel: "Today",
+    statusEvents: [
+      makeEvent("demo-4-submitted", "submitted", "2d ago", "Report received from the community."),
+      makeEvent("demo-4-reviewed", "ai_reviewed", "2d ago", "Reviewed as damaged road signage."),
+      makeEvent("demo-4-routed", "routed", "1d ago", "Sent to MMDA for replacement scheduling."),
+      makeEvent("demo-4-scheduled", "scheduled", "Today", "Replacement work has been scheduled."),
+    ],
   },
   {
     id: "demo-5",
@@ -109,12 +160,17 @@ export const DEMO_REPORTS: Report[] = [
     city: "Taguig",
     reporterUid: "demo-user",
     anonymous: false,
-    photoURLs: [],
+    photoURLs: [makeDemoPhoto("Drainage Issue", "#7C3AED", "#D8B4FE")],
     aiSummary: "Cracked storm drain grate, pedestrian hazard.",
     aiCategory: "drainage",
     aiSeverity: "moderate",
     confirmCount: 1,
     urgencyScore: 55,
+    updatedLabel: "Today",
+    statusEvents: [
+      makeEvent("demo-5-submitted", "submitted", "Today", "Report received from the community."),
+      makeEvent("demo-5-reviewed", "ai_reviewed", "Today", "Reviewed and waiting to be routed."),
+    ],
   },
   {
     id: "demo-6",
@@ -123,16 +179,18 @@ export const DEMO_REPORTS: Report[] = [
     category: "obstruction",
     severity: "moderate",
     status: "submitted",
-    geo: { lat: 14.6760, lng: 121.0437 },
+    geo: { lat: 14.676, lng: 121.0437 },
     geohash: "wdw5b",
     address: "Mindanao Ave",
     barangay: "Pasong Tamo",
     city: "Quezon City",
     reporterUid: "demo-user-2",
     anonymous: false,
-    photoURLs: [],
+    photoURLs: [makeDemoPhoto("Road Obstruction", "#4B5563", "#9CA3AF")],
     confirmCount: 0,
     urgencyScore: 48,
+    updatedLabel: "Just now",
+    statusEvents: [makeEvent("demo-6-submitted", "submitted", "Just now", "Report received from the community.")],
   },
   {
     id: "demo-7",
@@ -150,25 +208,66 @@ export const DEMO_REPORTS: Report[] = [
     agencyName: "DPWH NCR",
     reporterUid: "demo-user-3",
     anonymous: false,
-    photoURLs: [],
+    photoURLs: [makeDemoPhoto("Crosswalk Before", "#6B7280", "#9CA3AF")],
     aiSummary: "Faded thermoplastic markings. Repainting completed.",
     aiCategory: "other",
     aiSeverity: "low",
     confirmCount: 4,
     urgencyScore: 30,
+    updatedLabel: "3d ago",
+    resolutionProof: {
+      photoURL: makeDemoPhoto("Proof Uploaded", "#059669", "#34D399"),
+      uploadedBy: "DPWH NCR",
+      uploadedAtLabel: "3d ago",
+    },
+    statusEvents: [
+      makeEvent("demo-7-submitted", "submitted", "6d ago", "Report received from the community."),
+      makeEvent("demo-7-reviewed", "ai_reviewed", "6d ago", "Reviewed and categorized for repainting."),
+      makeEvent("demo-7-routed", "routed", "5d ago", "Sent to DPWH NCR for field action."),
+      makeEvent("demo-7-ack", "acknowledged", "4d ago", "DPWH NCR confirmed the case."),
+      makeEvent("demo-7-resolved", "resolved", "3d ago", "Marked resolved with proof uploaded by DPWH NCR."),
+    ],
   },
 ];
 
 export const DEMO_NOTIFICATIONS = [
-  { id: "n1", title: "Your report is now In Progress", body: "DPWH NCR crew dispatched to Katipunan Ave pothole.", reportId: "demo-1", at: "2h ago", unread: true },
-  { id: "n2", title: "Community confirmed your report", body: "12 neighbors confirmed the Katipunan pothole.", reportId: "demo-1", at: "5h ago", unread: true },
-  { id: "n3", title: "AI analysis complete", body: "Your España flooding report has been classified as High severity.", reportId: "demo-2", at: "Yesterday", unread: false },
-  { id: "n4", title: "Report resolved", body: "Tomas Morato crosswalk has been repainted.", reportId: "demo-7", at: "3d ago", unread: false },
+  {
+    id: "n1",
+    title: "Repair work started",
+    body: "DPWH NCR has started work on the Katipunan pothole case.",
+    reportId: "demo-1",
+    at: "2h ago",
+    unread: true,
+  },
+  {
+    id: "n2",
+    title: "More residents confirmed the issue",
+    body: "12 nearby residents confirmed the Katipunan pothole report.",
+    reportId: "demo-1",
+    at: "5h ago",
+    unread: true,
+  },
+  {
+    id: "n3",
+    title: "Report reviewed and routed",
+    body: "The España flooding case was reviewed and routed to MMDA.",
+    reportId: "demo-2",
+    at: "Yesterday",
+    unread: false,
+  },
+  {
+    id: "n4",
+    title: "Proof uploaded for a resolved issue",
+    body: "DPWH NCR uploaded proof for the Tomas Morato crosswalk case.",
+    reportId: "demo-7",
+    at: "3d ago",
+    unread: false,
+  },
 ];
 
 export const DEMO_INSIGHT = {
   area: "Quezon City",
   summary:
-    "3 active high-severity reports near you this week. Pothole density up 18% along Katipunan corridor — drive cautiously after dark.",
+    "Three high-priority road hazards are still active nearby this week. Katipunan remains the most urgent corridor after dark.",
   trend: "up" as const,
 };

@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { BottomNav } from "./BottomNav";
+import { OfflineBanner } from "./OfflineBanner";
 
 const NAV_HIDDEN = new Set(["/", "/onboarding"]);
 
@@ -13,6 +14,7 @@ export function AppShell() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <OfflineBanner />
       <main className={hideNav ? "pb-0" : "pb-28"}>
         <Outlet />
       </main>

@@ -2,18 +2,23 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { PageHeader, SoftCard, EmptyState } from "@/components/ui-kit";
-import { listNotifications } from "@/lib/dataSource";
+import { DEMO_USER_ID, listNotifications } from "@/lib/dataSource";
+import { useSession } from "@/lib/session";
 
 export default function Notifications() {
+  const session = useSession();
   const [items, setItems] = useState<Awaited<ReturnType<typeof listNotifications>>>([]);
-  useEffect(() => { listNotifications("demo-user").then(setItems); }, []);
+  useEffect(() => {
+    if (!session.isReady) return;
+    listNotifications(session.userId ?? DEMO_USER_ID).then(setItems);
+  }, [session.isReady, session.userId]);
 
   return (
     <div>
       <PageHeader title="Notifications" back />
       <div className="px-5 space-y-2.5">
         {items.length === 0 ? (
-          <EmptyState title="You're all caught up" subtitle="Updates on your reports will appear here." />
+          <EmptyState title="You&apos;re all caught up" subtitle="Updates about your reports and community confirmations will appear here." />
         ) : items.map((n) => (
           <Link key={n.id} to={`/r/${n.reportId}`}>
             <SoftCard className="p-4 hover:bg-surface-muted/50 transition">
