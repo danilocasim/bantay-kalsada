@@ -14,7 +14,8 @@ export default function Onboarding() {
   const [i, setI] = useState(0);
   const slide = slides[i];
   const Icon = slide.icon;
-  const next = () => (i < slides.length - 1 ? setI(i + 1) : navigate("/auth"));
+  const finish = () => { localStorage.setItem("bk_onboarded", "1"); navigate("/home"); };
+  const next = () => (i < slides.length - 1 ? setI(i + 1) : finish());
 
   return (
     <div className="min-h-screen flex flex-col px-6 pt-safe pb-safe">
@@ -24,7 +25,7 @@ export default function Onboarding() {
             <span key={idx} className={`h-1.5 rounded-full transition-all ${idx === i ? "w-6 bg-primary" : "w-1.5 bg-border"}`} />
           ))}
         </div>
-        <button onClick={() => navigate("/auth")} className="text-sm text-muted-foreground">Skip</button>
+        <button onClick={finish} className="text-sm text-muted-foreground">Skip</button>
       </div>
       <div className="flex-1 grid place-items-center">
         <AnimatePresence mode="wait">

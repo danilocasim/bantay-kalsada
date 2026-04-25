@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PageHeader, SoftCard, StatusBadge, SeverityBadge, EmptyState } from "@/components/ui-kit";
 import { listMyReports } from "@/lib/dataSource";
-import { useAuth } from "@/contexts/AuthContext";
 import { CATEGORY_LABEL, type Report } from "@/lib/types";
 
 export default function Track() {
-  const { user } = useAuth();
   const [reports, setReports] = useState<Report[]>([]);
   const [filter, setFilter] = useState<"all" | "active" | "resolved">("all");
-  useEffect(() => { listMyReports(user?.uid ?? "demo-user").then(setReports); }, [user]);
+  useEffect(() => { listMyReports("demo-user").then(setReports); }, []);
 
   const filtered = reports.filter((r) => {
     if (filter === "active") return !["resolved", "community_verified"].includes(r.status);

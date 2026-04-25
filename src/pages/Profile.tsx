@@ -1,20 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Bell, Info, Shield } from "lucide-react";
+import { Bell, Info, Shield } from "lucide-react";
 import { PageHeader, SoftCard } from "@/components/ui-kit";
-import { useAuth } from "@/contexts/AuthContext";
-import { listMyReports, isDemoMode } from "@/lib/dataSource";
+import { listMyReports } from "@/lib/dataSource";
 import type { Report } from "@/lib/types";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
   const [reports, setReports] = useState<Report[]>([]);
-  useEffect(() => { listMyReports(user?.uid ?? "demo-user").then(setReports); }, [user]);
+  useEffect(() => { listMyReports("demo-user").then(setReports); }, []);
 
   const resolved = reports.filter((r) => ["resolved", "community_verified"].includes(r.status)).length;
   const confirms = reports.reduce((s, r) => s + r.confirmCount, 0);
-  const initial = (user?.displayName ?? user?.email ?? "Demo")[0].toUpperCase();
 
   return (
     <div>
@@ -22,10 +19,10 @@ export default function Profile() {
       <div className="px-5">
         <SoftCard>
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-primary text-primary-foreground grid place-items-center text-xl font-semibold">{initial}</div>
+            <div className="h-16 w-16 rounded-full bg-primary text-primary-foreground grid place-items-center text-xl font-semibold">D</div>
             <div className="min-w-0">
-              <div className="font-semibold text-base truncate">{user?.displayName ?? user?.email ?? "Demo Citizen"}</div>
-              <div className="text-xs text-muted-foreground">{isDemoMode ? "Demo account" : user?.email}</div>
+              <div className="font-semibold text-base truncate">Demo Citizen</div>
+              <div className="text-xs text-muted-foreground">Browsing in demo mode</div>
             </div>
           </div>
           <div className="mt-5 grid grid-cols-3 gap-3 text-center">
@@ -39,11 +36,6 @@ export default function Profile() {
           <Row icon={Shield} label="Urgency levels" onClick={() => navigate("/urgency")} />
           <Row icon={Info} label="About Bantay Kalsada" />
         </div>
-        <button
-          onClick={async () => { if (!isDemoMode) await logout(); navigate("/auth"); }}
-          className="mt-6 w-full py-4 rounded-2xl bg-surface border border-border text-status-urgent font-medium text-[15px] flex items-center justify-center gap-2 hover:bg-status-urgent/5 transition">
-          <LogOut className="h-4 w-4" />Sign out
-        </button>
       </div>
     </div>
   );
