@@ -1,7 +1,9 @@
+# Bantay Kalsada — Implementation Plan (v2)
 
-# Bantay Kalsada — Implementation Plan
+A mobile-first **PWA** for citizens to report road issues and for agency officials to triage them. Apple-like minimal design per `design.md`. Architecture: **Firebase + Gemini + Leaflet + PWA**.
 
-A mobile-first **PWA** for citizens to report road issues (potholes, flooding, broken signs, etc.) and for agency officials to triage and resolve them. Apple-like minimal design per `design.md`.
+## 0. Demo mode (graceful fallback)
+When `VITE_FIREBASE_*` env vars are missing, the app runs in **demo mode**: read-only screens (Home, Map, Track, Detail, Agency Dashboard, Notifications) render seeded fake reports from `src/lib/demoData.ts`. Auth + report submission still gate behind `FirebaseSetupGate`. Once Firebase is connected, the same screens read live data from Firestore via `src/lib/dataSource.ts`.
 
 ---
 
@@ -119,18 +121,15 @@ I'll guide you step-by-step in chat:
 ---
 
 ## 8. Build order
-
-1. Design tokens, layout shell, pill nav, routing
-2. Firebase init + Auth (Login/Signup, Onboarding, Splash)
-3. Firestore schema + Security Rules + Storage rules
-4. Report flow (camera → location → form → upload)
-5. Cloud Functions: `analyzeReport` + `routeAgency`
-6. AI Analysis screen + Track My Reports + Report Detail
-7. Public Map + Home (with AI insight)
-8. Agency Dashboard, Case Detail, status updates + timeline
-9. FCM push notifications + Notifications screen
-10. PWA manifest, install prompt, service worker (production-guarded)
-11. Empty states, polish, accessibility pass
+1. Reset + design tokens + layout shell + pill nav + routing ✅
+2. Demo data layer + dataSource adapter ✅
+3. All 13 screens rendering against dataSource ✅
+4. Firebase Auth wiring (Splash, Onboarding, Login/Signup)
+5. Firestore live reads/writes (Report flow, Track, Detail, Agency)
+6. Cloud Functions: analyzeReport + routeAgency + onReportStatusChange + notifyAgencyOnNew
+7. FCM push + Notifications inbox
+8. PWA manifest + install prompt + production-guarded SW ✅
+9. Polish, empty states, a11y
 
 ---
 
