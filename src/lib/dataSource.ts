@@ -25,6 +25,72 @@ import { STATUS_LABEL, type IdentityStatus, type IdentityVerification, type Repo
 
 const REPORTS_KEY = "bk_reports_v1";
 const IDENTITIES_KEY = "bk_identities_v1";
+const INAPP_NOTIFY_PREFIX = "bk_inapp_notify_v1_";
+const STATUS_SNAP_PREFIX = "bk_report_status_snap_";
+
+type InAppNotificationRow = {
+  id: string;
+  title: string;
+  body: string;
+  reportId: string;
+  at: string;
+  unread: boolean;
+};
+
+function readInAppNotifications(uid: string): InAppNotificationRow[] {
+  if (!hasStorage()) return [];
+  try {
+    const raw = window.localStorage.getItem(`${INAPP_NOTIFY_PREFIX}${uid}`);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as InAppNotificationRow[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeInAppNotifications(uid: string, items: InAppNotificationRow[]) {
+  if (!hasStorage()) return;
+  window.localStorage.setItem(`${INAPP_NOTIFY_PREFIX}${uid}`, JSON.stringify(items.slice(0, 40)));
+}
+
+/** Detect status transitions on the user’s own reports and queue in-app notifications (local storage). */
+export function recordReportStatusNotifications(uid: string, reports: Report[]): void {
+  if (!hasStorage()) return;
+  const snapKey = `${STATUS_SNAP_PREFIX}${uid}`;
+  let prev: Record<string, ReportStatus> = {};
+  try {
+    prev = JSON.parse(window.localStorage.getItem(snapKey) || "{}") as Record<string, ReportStatus>;
+  } catch {
+    prev = {};
+  }
+
+  const next: Record<string, ReportStatus> = { ...prev };
+  const existing = readInAppNotifications(uid);
+  const fresh: InAppNotificationRow[] = [];
+  const atLabel = new Date().toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+
+  for (const r of reports) {
+    const old = prev[r.id];
+    if (old !== undefined && old !== r.status) {
+      const id = `status-${r.id}-${r.status}-${r.updatedAtMs ?? Date.now()}`;
+      if (!existing.some((e) => e.id === id) && !fresh.some((e) => e.id === id)) {
+        fresh.push({
+          id,
+          title: `Status updated: ${STATUS_LABEL[r.status]}`,
+          body: r.title,
+          reportId: r.id,
+          at: atLabel,
+          unread: true,
+        });
+      }
+    }
+    next[r.id] = r.status;
+  }
+
+  window.localStorage.setItem(snapKey, JSON.stringify(next));
+  if (fresh.length) writeInAppNotifications(uid, [...fresh, ...existing]);
+}
 
 export const DEMO_USER_ID = "demo-user";
 export const DEMO_AGENCY_ID = "demo-mmda";
@@ -269,11 +335,16 @@ export async function getReport(id: string): Promise<Report | null> {
 }
 
 export async function listMyReports(uid: string): Promise<Report[]> {
-  if (isDemoMode) return readReports().filter((report) => report.reporterUid === uid);
-
-  const reportsQuery = query(collection(getDb(), "reports"), where("reporterUid", "==", uid), orderBy("createdAt", "desc"));
-  const snapshot = await getDocs(reportsQuery);
-  return snapshot.docs.map((report) => mapReportSnapshot(report, uid));
+  let reports: Report[];
+  if (isDemoMode) {
+    reports = readReports().filter((report) => report.reporterUid === uid);
+  } else {
+    const reportsQuery = query(collection(getDb(), "reports"), where("reporterUid", "==", uid), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(reportsQuery);
+    reports = snapshot.docs.map((report) => mapReportSnapshot(report, uid));
+  }
+  recordReportStatusNotifications(uid, reports);
+  return reports;
 }
 
 export async function listAgencyReports(agencyId: string): Promise<Report[]> {
@@ -595,6 +666,7 @@ export async function listNotifications(_uid: string) {
 
   if (!isDemoMode) {
     const reports = await listMyReports(_uid);
+    const inApp = readInAppNotifications(_uid);
     const reportNotifications = reports
       .sort((a, b) => (b.updatedAtMs ?? 0) - (a.updatedAtMs ?? 0))
       .slice(0, 8)
@@ -607,11 +679,13 @@ export async function listNotifications(_uid: string) {
         unread: false,
       }));
 
-    return [...buildEscalationNotifications(reports), ...reportNotifications];
+    return [...inApp, ...buildEscalationNotifications(reports), ...reportNotifications];
   }
 
   const demoReports = readReports().filter((report) => report.reporterUid === _uid);
-  return [...buildEscalationNotifications(demoReports), ...DEMO_NOTIFICATIONS];
+  recordReportStatusNotifications(_uid, demoReports);
+  const inApp = readInAppNotifications(_uid);
+  return [...inApp, ...buildEscalationNotifications(demoReports), ...DEMO_NOTIFICATIONS];
 }
 
 export async function getHomeInsight(_geohash?: string) {
@@ -680,4 +754,9 @@ export function resetLocalDemoState(): void {
   if (!hasStorage()) return;
   window.localStorage.removeItem(REPORTS_KEY);
   window.localStorage.removeItem(IDENTITIES_KEY);
+  for (let i = window.localStorage.length - 1; i >= 0; i--) {
+    const k = window.localStorage.key(i);
+    if (!k) continue;
+    if (k.startsWith(INAPP_NOTIFY_PREFIX) || k.startsWith(STATUS_SNAP_PREFIX)) window.localStorage.removeItem(k);
+  }
 }

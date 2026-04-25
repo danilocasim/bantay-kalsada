@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Inbox } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { STATUS_LABEL, type ReportStatus, type Severity } from "@/lib/types";
 
@@ -8,20 +8,28 @@ export function PageHeader({
   title,
   subtitle,
   back,
+  backTo,
   right,
 }: {
   title: string;
   subtitle?: string;
   back?: boolean;
+  /** When set, back navigates here instead of browser history (reliable from menus / deep links). */
+  backTo?: string;
   right?: ReactNode;
 }) {
   const navigate = useNavigate();
+  const handleBack = () => {
+    if (backTo) navigate(backTo);
+    else navigate(-1);
+  };
   return (
     <header className="pt-safe px-5 pt-4 pb-3 flex items-start gap-3">
       {back && (
         <button
+          type="button"
           aria-label="Back"
-          onClick={() => navigate(-1)}
+          onClick={handleBack}
           className="h-9 w-9 -ml-1 rounded-full grid place-items-center text-foreground/80 hover:bg-muted active:scale-95 transition"
         >
           <ChevronLeft className="h-5 w-5" />
@@ -63,7 +71,7 @@ export function SoftCard({
 
 const SEVERITY_CLASS: Record<Severity, string> = {
   high: "bg-status-urgent/10 text-status-urgent",
-  moderate: "bg-status-pothole/10 text-status-pothole",
+  moderate: "bg-status-moderate/12 text-status-moderate",
   low: "bg-status-resolved/10 text-status-resolved",
 };
 
@@ -107,13 +115,13 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="text-center py-16 px-6">
-      <div className="mx-auto mb-5 h-20 w-20 rounded-3xl bg-primary-soft grid place-items-center text-primary text-3xl">
-        ✦
+    <div className="px-6 py-16 text-center">
+      <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-muted/50 text-muted-foreground">
+        <Inbox className="h-7 w-7" strokeWidth={1.75} aria-hidden />
       </div>
       <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-      {subtitle && <p className="text-sm text-muted-foreground mt-1.5 max-w-xs mx-auto">{subtitle}</p>}
-      {action && <div className="mt-5">{action}</div>}
+      {subtitle && <p className="mx-auto mt-1.5 max-w-xs text-sm text-muted-foreground">{subtitle}</p>}
+      {action && <div className="mt-5 flex justify-center">{action}</div>}
     </div>
   );
 }

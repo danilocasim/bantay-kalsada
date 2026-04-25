@@ -9,6 +9,10 @@ type SessionState = {
   isReady: boolean;
   isDemo: boolean;
   userId: string | null;
+  /** From Firebase profile when configured; null in demo or anonymous without a set name. */
+  displayName: string | null;
+  /** Present when the user signed in with email; usually null for anonymous auth. */
+  email: string | null;
   role: SessionRole;
   agencyId: string | null;
   isAgency: boolean;
@@ -20,6 +24,8 @@ const DEFAULT_SESSION: SessionState = {
   isReady: true,
   isDemo: true,
   userId: DEMO_USER_ID,
+  displayName: null,
+  email: null,
   role: "citizen",
   agencyId: null,
   isAgency: false,
@@ -54,6 +60,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
               isReady: true,
               isDemo: false,
               userId: null,
+              displayName: null,
+              email: null,
               role: "citizen",
               agencyId: null,
               isAgency: false,
@@ -75,6 +83,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             isReady: true,
             isDemo: false,
             userId: user.uid,
+            displayName: user.displayName?.trim() || null,
+            email: user.email?.trim() || null,
             role,
             agencyId,
             isAgency: role === "agency_official" || role === "admin",
@@ -88,6 +98,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             isReady: true,
             isDemo: false,
             userId: user.uid,
+            displayName: user.displayName?.trim() || null,
+            email: user.email?.trim() || null,
             role: "citizen",
             agencyId: null,
             isAgency: false,

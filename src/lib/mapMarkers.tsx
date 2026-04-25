@@ -34,7 +34,7 @@ const CATEGORY_ICON_LABEL: Record<Category, string> = {
 
 const SEVERITY_RING_COLOR: Record<Severity, string> = {
   low: "hsl(var(--status-resolved))",
-  moderate: "hsl(var(--status-pothole))",
+  moderate: "hsl(var(--status-moderate))",
   high: "hsl(var(--status-urgent))",
 };
 

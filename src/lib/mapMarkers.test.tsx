@@ -10,7 +10,7 @@ describe("map marker helpers", () => {
 
   it("maps severity to ring colors", () => {
     expect(getMapSeverityRingColor("high")).toContain("status-urgent");
-    expect(getMapSeverityRingColor("moderate")).toContain("status-pothole");
+    expect(getMapSeverityRingColor("moderate")).toContain("status-moderate");
     expect(getMapSeverityRingColor("low")).toContain("status-resolved");
   });
 

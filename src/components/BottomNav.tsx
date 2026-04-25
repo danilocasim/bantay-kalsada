@@ -14,7 +14,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label='Primary'
-      className='fixed inset-x-0 bottom-0 z-40 pb-safe pointer-events-none'
+      className='fixed inset-x-0 bottom-0 z-[10050] pb-safe pointer-events-none'
     >
       <div className='mx-auto max-w-md px-4 pb-3'>
         <div className='pointer-events-auto relative glass shadow-float rounded-full border border-border/60 px-2 py-2 flex items-center justify-between'>

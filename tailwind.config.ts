@@ -30,6 +30,7 @@ export default {
         },
         status: {
           urgent: "hsl(var(--status-urgent))",
+          moderate: "hsl(var(--status-moderate))",
           pothole: "hsl(var(--status-pothole))",
           flood: "hsl(var(--status-flood))",
           drainage: "hsl(var(--status-drainage))",

@@ -40,6 +40,7 @@ All colors MUST be HSL.
 
     /* Status colors (urgency / category) */
     --status-urgent: 0 84% 55%; /* red */
+    --status-moderate: 43 88% 46%; /* amber — severity “Moderate”, distinct from orange work-in-progress */
     --status-pothole: 28 92% 54%; /* orange */
     --status-flood: 211 100% 52%; /* blue */
     --status-drainage: 270 70% 58%; /* purple */
@@ -136,6 +137,17 @@ All colors MUST be HSL.
   }
   .pt-safe {
     padding-top: max(env(safe-area-inset-top), 0.75rem);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 

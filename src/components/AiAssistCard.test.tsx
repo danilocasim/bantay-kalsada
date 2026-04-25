@@ -18,7 +18,7 @@ describe("AiAssistCard", () => {
       />,
     );
 
-    expect(screen.getByText("AI-assisted review")).toBeInTheDocument();
+    expect(screen.getByText("Review suggestions")).toBeInTheDocument();
     expect(screen.getByText("Suggested category")).toBeInTheDocument();
     expect(screen.getByText("Flooded Area")).toBeInTheDocument();
     expect(screen.getByText(/High confidence/i)).toBeInTheDocument();
@@ -39,8 +39,8 @@ describe("AiAssistCard", () => {
       />,
     );
 
-    expect(screen.getByText("AI-assisted triage")).toBeInTheDocument();
-    expect(screen.getByText("AI incident draft")).toBeInTheDocument();
+    expect(screen.getByText("Triage suggestions")).toBeInTheDocument();
+    expect(screen.getByText("Incident draft")).toBeInTheDocument();
     expect(screen.getByText(/Site inspection and replacement recommended/i)).toBeInTheDocument();
   });
 });

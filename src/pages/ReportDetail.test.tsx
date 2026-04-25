@@ -16,6 +16,7 @@ vi.mock("react-router-dom", async () => {
     ...actual,
     useParams: () => ({ id: "demo-2" }),
     useNavigate: () => vi.fn(),
+    useLocation: () => ({ pathname: "/r/demo-2", state: null as unknown, search: "", hash: "", key: "default" }),
   };
 });
 
@@ -95,9 +96,9 @@ describe("ReportDetail confirm UX", () => {
 
     render(<ReportDetail />);
 
-    expect(await screen.findByText("You reported this issue")).toBeInTheDocument();
+    expect(await screen.findByText("Waiting for confirmations")).toBeInTheDocument();
     expect(screen.getByText("Reporter")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Confirm issue" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Confirm this issue" })).not.toBeInTheDocument();
   });
 
   it("switches to a persistent confirmed state after a successful confirm", async () => {
@@ -110,12 +111,12 @@ describe("ReportDetail confirm UX", () => {
 
     render(<ReportDetail />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Confirm issue" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Confirm this issue" }));
 
     expect((await screen.findAllByText("Confirmed by you")).length).toBeGreaterThan(0);
     expect(screen.getByText(/13 community confirmations/i)).toBeInTheDocument();
-    expect(screen.getByText(/You confirmed this/i)).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Confirm issue" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "You confirmed this issue" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Confirm this issue" })).not.toBeInTheDocument();
   });
 
   it("renders a confirmed state when the viewer already confirmed the issue", async () => {
@@ -127,8 +128,8 @@ describe("ReportDetail confirm UX", () => {
     render(<ReportDetail />);
 
     expect((await screen.findAllByText("Confirmed by you")).length).toBeGreaterThan(0);
-    expect(screen.getByText("Your confirmation has already been counted.")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Confirm issue" })).not.toBeInTheDocument();
+    expect(screen.getByText("Confirmation on file")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Confirm this issue" })).not.toBeInTheDocument();
   });
 
   it("shows the 8888 escalation prompt for the original reporter after 20 unresolved days", async () => {
@@ -153,7 +154,7 @@ describe("ReportDetail confirm UX", () => {
 
     render(<ReportDetail />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Confirm issue" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Confirm this issue" }));
 
     await waitFor(() => expect(mockGetReport).toHaveBeenCalledTimes(1));
     expect((await screen.findAllByText("Confirmed by you")).length).toBeGreaterThan(0);
