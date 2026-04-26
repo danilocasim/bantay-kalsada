@@ -1,6 +1,6 @@
-# Bantay Kalsada
+# Bisto
 
-Bantay Kalsada is a PWA-first community road reporting platform designed to help citizens report road hazards quickly, track them publicly, and encourage accountable follow-through from the appropriate office or response team.
+Bisto is a PWA-first community road reporting platform designed to help citizens report road hazards quickly, track them publicly, and encourage accountable follow-through from the appropriate office or response team.
 
 The project focuses on a simple but high-value civic workflow:
 
@@ -197,19 +197,21 @@ Additional project documentation is available in:
 
 ### Project Name
 
-`Bantay Kalsada`
+`Bisto`
 
 ### Team Members
 
-- `Add team member name`
-- `Add team member name`
-- `Add team member name`
+- `Danilo Casim Jr`
+- `Myrine Angela Agustin`
+- `Christian Mark Francisco`
+- `Karen Pabilando`
 
 ### Devpost Profiles
 
-- `Add Devpost profile URL`
-- `Add Devpost profile URL`
-- `Add Devpost profile URL`
+- `[Danilo's Profile](https://devpost.com/danilocasim)`
+- `[Christian's Profile](https://devpost.com/margiehouses)`
+- `[Myrine's Profile](https://devpost.com/myangelaagustin)`
+- `[Karen's Profile](https://devpost.com/pabilando-karenpv)`
 
 ## License
 
