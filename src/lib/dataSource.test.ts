@@ -5,6 +5,7 @@ import {
   createReport,
   getIdentityVerification,
   getReport,
+  listReports,
   listMyReports,
   resetLocalDemoState,
   submitIdentityVerification,
@@ -39,6 +40,29 @@ describe("data source local-first behavior", () => {
 
     const duplicate = await confirmReport("demo-2", DEMO_USER_ID);
     expect(duplicate).toEqual({ ok: false, reason: "duplicate" });
+  });
+
+  it("returns the public sample image for the Espana flood demo report", async () => {
+    const report = await getReport("demo-2");
+
+    expect(report?.photoURLs[0]).toBe("/images.jpeg");
+  });
+
+  it("refreshes seeded demo report media when local storage has stale demo data", async () => {
+    const staleReports = (await listReports()).map((report) =>
+      report.id === "demo-2"
+        ? {
+            ...report,
+            photoURLs: ["data:image/svg+xml;utf8,stale"],
+          }
+        : report,
+    );
+
+    window.localStorage.setItem("bk_reports_v1", JSON.stringify(staleReports));
+
+    const report = await getReport("demo-2");
+
+    expect(report?.photoURLs[0]).toBe("/images.jpeg");
   });
 
   it("requires proof or override reason when resolving a case", async () => {

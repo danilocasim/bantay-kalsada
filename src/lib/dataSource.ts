@@ -124,6 +124,26 @@ const hasStorage = (): boolean => typeof window !== "undefined" && typeof window
 
 const nowLabel = (): string => "Just now";
 
+const normalizeReport = (report: Report): Report => ({
+  ...report,
+  statusEvents: report.statusEvents?.length ? report.statusEvents : buildFallbackStatusEvents(report),
+  confirmedBy: report.confirmedBy ?? [],
+});
+
+const seedDemoReports = (): Report[] => DEMO_REPORTS.map((report) => normalizeReport(clone(report)));
+
+const mergeSeededReport = (seededReport: Report, storedReport: Report): Report => ({
+  ...seededReport,
+  status: storedReport.status,
+  confirmCount: storedReport.confirmCount,
+  updatedLabel: storedReport.updatedLabel,
+  createdAtMs: storedReport.createdAtMs,
+  updatedAtMs: storedReport.updatedAtMs,
+  statusEvents: storedReport.statusEvents,
+  resolutionProof: storedReport.resolutionProof,
+  confirmedBy: storedReport.confirmedBy,
+});
+
 const formatRelativeLabel = (value: unknown): string | undefined => {
   if (!value || typeof value !== "object" || !("toDate" in value) || typeof value.toDate !== "function") {
     return undefined;
@@ -144,11 +164,7 @@ const formatRelativeLabel = (value: unknown): string | undefined => {
 };
 
 const readReports = (): Report[] => {
-  const base = DEMO_REPORTS.map((report) => ({
-    ...clone(report),
-    statusEvents: buildFallbackStatusEvents(report),
-    confirmedBy: report.confirmedBy ?? [],
-  }));
+  const base = seedDemoReports();
 
   if (!hasStorage()) return base;
 
@@ -159,11 +175,23 @@ const readReports = (): Report[] => {
   }
 
   try {
-    return (JSON.parse(stored) as Report[]).map((report) => ({
-      ...report,
-      statusEvents: report.statusEvents?.length ? report.statusEvents : buildFallbackStatusEvents(report),
-      confirmedBy: report.confirmedBy ?? [],
-    }));
+    const storedReports = (JSON.parse(stored) as Report[]).map(normalizeReport);
+    const storedById = new Map(storedReports.map((report) => [report.id, report]));
+    const mergedReports = [
+      ...base.map((seededReport) => {
+        const storedReport = storedById.get(seededReport.id);
+        if (!storedReport) return seededReport;
+        storedById.delete(seededReport.id);
+        return mergeSeededReport(seededReport, storedReport);
+      }),
+      ...Array.from(storedById.values()),
+    ];
+
+    if (JSON.stringify(mergedReports) !== JSON.stringify(storedReports)) {
+      window.localStorage.setItem(REPORTS_KEY, JSON.stringify(mergedReports));
+    }
+
+    return mergedReports;
   } catch {
     window.localStorage.setItem(REPORTS_KEY, JSON.stringify(base));
     return base;
