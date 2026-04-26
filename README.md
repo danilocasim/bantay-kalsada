@@ -208,10 +208,10 @@ Additional project documentation is available in:
 
 ### Devpost Profiles
 
-- `[Danilo's Profile](https://devpost.com/danilocasim)`
-- `[Christian's Profile](https://devpost.com/margiehouses)`
-- `[Myrine's Profile](https://devpost.com/myangelaagustin)`
-- `[Karen's Profile](https://devpost.com/pabilando-karenpv)`
+- [Danilo's Profile](https://devpost.com/danilocasim)
+- [Christian's Profile](https://devpost.com/margiehouses)
+- [Myrine's Profile](https://devpost.com/myangelaagustin)
+- [Karen's Profile](https://devpost.com/pabilando-karenpv)
 
 ## License
 
